@@ -1,8 +1,11 @@
-import React, { Component} from 'react';
+import React, { Component , useState } from 'react';
 import { View, Text } from 'react-native';
 import api from "../services/Api";
 
 export default class Main extends Component{
+    state = {
+        docs: []
+    };
     componentDidMount() {
         this.loadProducts();
     }
@@ -12,13 +15,16 @@ export default class Main extends Component{
 
         const { docs } = response.data;
 
-        console.log(docs);
+        this.setState({docs});
     };
 
     render() {
         return (
             <View>
                 <Text>Bem vind@ à main.</Text>
+                {this.state.docs.map((item) => (
+                    <Text key={item._id}>{item.title}</Text>
+                ))}
             </View>
         );
     }
