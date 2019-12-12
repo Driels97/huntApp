@@ -4,18 +4,31 @@ import api from "../services/Api";
 
 export default class Main extends Component{
     state = {
-        docs: []
+        docs: [],
+        page: 1,
+        productInfo: {}
     };
+
     componentDidMount() {
         this.loadProducts();
     }
 
-    loadProducts = async () => {
-        const response = await api.get('/products');
+    loadProducts = async (page = 1) => {
+        const response = await api.get(`/products?page=${page}`);
 
-        const { docs } = response.data;
+        const { docs, ...productInfo} = response.data;
 
-        this.setState({docs});
+        this.setState({docs: [...this.state.docs, ...docs], productInfo, page});
+    };
+
+    loadMore = async () => {
+        const { page, productInfo } = this.state;
+
+        if(page === productInfo.pages) return;
+
+        const pageNumber = page + 1;
+
+        this.loadProducts(pageNumber);
     };
 
     renderItem = ({ item }) => (
@@ -23,7 +36,8 @@ export default class Main extends Component{
             <Text style={styles.productTitle}>{item.title}</Text>
             <Text>{item.description}</Text>
             <TouchableOpacity
-                onPress={() => {}}
+                onPress={() => {
+                    this.props.navigation.navigate('Product', { product: item });}}
                 style={styles.productButton}>
                 <Text style={styles.productButtonText}>Acessar</Text>
             </TouchableOpacity>
@@ -38,6 +52,8 @@ export default class Main extends Component{
                     data={this.state.docs}
                     keyExtractor={item => item._id}
                     renderItem={this.renderItem}
+                    onEndReached={this.loadMore}
+                    onEndThreshold={0.1}
                 />
             </View>
         );
